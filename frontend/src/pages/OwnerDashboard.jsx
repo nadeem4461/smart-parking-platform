@@ -1,108 +1,64 @@
-import { Link, useLocation } from "react-router-dom";
-import { getAuth } from "../utils/auth";
+// frontend/src/pages/OwnerDashboard.jsx
+import { useEffect, useState } from 'react';
+import API from '../api/axios';
+import AnalyticsCard from '../components/AnalyticsCard';
+import EarningsChart from '../components/EarningsChart';
+import BookingTable from '../components/BookingTable';
+import ParkingTable from '../components/ParkingTable';
 
-export default function Navbar() {
-  const location = useLocation();
-  const auth = getAuth();              // { token, name, role }
-  const role = auth?.role;             // "user", "owner", "admin"
-  const isLoggedIn = !!auth?.token;
+export default function OwnerDashboard() {
+  const [parkings, setParkings] = useState([]);
+  const [bookings, setBookings] = useState([]);
+  const [earnings, setEarnings] = useState({ per_day: [], totals: {} });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        setLoading(true);
+        const [pRes, bRes, eRes] = await Promise.all([
+          API.get('/owner/parkings'),
+          API.get('/owner/bookings'),
+          API.get('/owner/earnings?days=30')
+        ]);
+        setParkings(pRes.data.parkings || []);
+        setBookings(bRes.data.bookings || []);
+        setEarnings(eRes.data || { per_day: [], totals: {} });
+      } catch (err) {
+        console.error('owner dashboard load error', err);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
 
   return (
-    <nav className="bg-white shadow-sm sticky top-0 z-50">
-      <div className="max-w-6xl mx-auto px-6 py-3 flex justify-between items-center">
+    <div className="max-w-6xl mx-auto p-6 space-y-6">
+      <h1 className="text-2xl font-bold text-blue-800">Owner Dashboard</h1>
 
-        {/* -------------------------- LEFT SECTION -------------------------- */}
-        <div className="flex items-center gap-6">
-          <Link
-            to="/"
-            className="text-xl font-bold text-blue-700 hover:text-blue-800"
-          >
-            SmartPark+
-          </Link>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <AnalyticsCard title="Total Earnings" value={`₹${earnings.totals?.total_earnings ?? 0}`} />
+        <AnalyticsCard title="Total Bookings" value={earnings.totals?.total_bookings ?? 0} />
+        <AnalyticsCard title="Active Parkings" value={parkings.length} />
+      </div>
 
-          {/* HOME */}
-          <Link
-            to="/"
-            className={`font-medium ${
-              location.pathname === "/" ? "text-blue-700" : "text-gray-600"
-            } hover:text-blue-700`}
-          >
-            Home
-          </Link>
+      <div className="bg-white p-4 rounded shadow">
+        <EarningsChart data={earnings.per_day} />
+      </div>
 
-          {/* MY BOOKINGS (only for logged-in users) */}
-          {isLoggedIn && (
-            <Link
-              to="/bookings"
-              className={`font-medium ${
-                location.pathname === "/bookings"
-                  ? "text-blue-700"
-                  : "text-gray-600"
-              } hover:text-blue-700`}
-            >
-              My Bookings
-            </Link>
-          )}
-
-          {/* OWNER DASHBOARD (only visible for role = owner / admin) */}
-          {(role === "owner" || role === "admin") && (
-            <Link
-              to="/owner/dashboard"
-              className={`font-medium ${
-                location.pathname === "/owner/dashboard"
-                  ? "text-blue-700"
-                  : "text-gray-600"
-              } hover:text-blue-700`}
-            >
-              Owner Dashboard
-            </Link>
-          )}
-
-          {/* TRAFFIC ADVISOR (visible for all) */}
-          <Link
-            to="/traffic"
-            className={`font-medium ${
-              location.pathname === "/traffic"
-                ? "text-blue-700"
-                : "text-gray-600"
-            } hover:text-blue-700`}
-          >
-            Traffic Advisor
-          </Link>
+      <div className="grid md:grid-cols-2 gap-4">
+        <div className="bg-white p-4 rounded shadow">
+          <h3 className="font-semibold mb-3">Latest Bookings</h3>
+          <BookingTable bookings={bookings} />
         </div>
 
-        {/* -------------------------- RIGHT SECTION -------------------------- */}
-        <div>
-          {/* If logged in → show logout */}
-          {isLoggedIn ? (
-            <button
-              onClick={() => {
-                localStorage.removeItem("auth");
-                window.location.href = "/login";
-              }}
-              className="text-sm font-medium text-gray-500 hover:text-red-600 transition"
-            >
-              Logout
-            </button>
-          ) : (
-            // If NOT logged in → show Login & Signup
-            <div className="flex gap-4">
-              <Link
-                to="/login"
-                className="text-sm font-medium text-gray-600 hover:text-blue-700"
-              >
-                Login
-              </Link>
-              <Link
-                to="/signup"
-                className="text-sm font-medium text-gray-600 hover:text-blue-700"
-              >
-                Signup
-              </Link>
-            </div>
-          )}
+        <div className="bg-white p-4 rounded shadow">
+          <h3 className="font-semibold mb-3">Your Parkings</h3>
+          <ParkingTable parkings={parkings} />
         </div>
       </div>
-    </nav>
+
+      {loading && <div className="text-gray-500">Loading...</div>}
+    </div>
   );
 }

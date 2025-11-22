@@ -1,19 +1,31 @@
-// frontend/src/utils/auth.js
+// utils/auth.js
+
 export function saveAuth(data) {
-  // data: { token, name, role }
-  localStorage.setItem('auth', JSON.stringify(data));
+  localStorage.setItem(
+    "auth",
+    JSON.stringify({
+      token: data.token,
+      name: data.name,
+      role: data.role,
+    })
+  );
 }
 
 export function getAuth() {
-  const raw = localStorage.getItem('auth');
-  if (!raw) return null;
-  try { return JSON.parse(raw); } catch { return null; }
-}
-
-export function clearAuth() {
-  localStorage.removeItem('auth');
+  const stored = localStorage.getItem("auth");
+  if (!stored) return null;
+  try {
+    return JSON.parse(stored);
+  } catch {
+    return null;
+  }
 }
 
 export function isAuthed() {
-  return !!getAuth()?.token;
+  const auth = getAuth();
+  return !!auth?.token;
+}
+
+export function clearAuth() {
+  localStorage.removeItem("auth");
 }
