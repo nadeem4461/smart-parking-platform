@@ -1,11 +1,19 @@
-export const saveAuth =({token, name,role })=>{
-    localStorage.setItem("token",token);
-    localStorage.setItem("name",name || "");
-    localStorage.setItem("role",role || "user");
+// frontend/src/utils/auth.js
+export function saveAuth(data) {
+  // data: { token, name, role }
+  localStorage.setItem('auth', JSON.stringify(data));
 }
-export const clearAuth =()=>{
-    localStorage.removeItem("token");
-    localStorage.removeItem("name");
-    localStorage.removeItem("role");
+
+export function getAuth() {
+  const raw = localStorage.getItem('auth');
+  if (!raw) return null;
+  try { return JSON.parse(raw); } catch { return null; }
 }
-export const isAuthed = () => !!localStorage.getItem("token");
+
+export function clearAuth() {
+  localStorage.removeItem('auth');
+}
+
+export function isAuthed() {
+  return !!getAuth()?.token;
+}

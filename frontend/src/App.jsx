@@ -6,6 +6,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Navbar from "./components/Navbar";
 import MyBookings from "./pages/MyBookings";
 import TrafficAdvisor from "./pages/TrafficAdvisor";
+import OwnerDashboard from "./pages/OwnerDashboard";
 
 export default function App() {
   return (
@@ -17,6 +18,7 @@ export default function App() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/bookings" element={<MyBookings />} />
        <Route path="/traffic" element={<TrafficAdvisor />} />
+    <Route path="/owner/dashboard" element={<ProtectedRoute allowedRoles={['owner','admin']}><OwnerDashboard/></ProtectedRoute>} />
 
 
         <Route
