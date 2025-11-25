@@ -7,6 +7,7 @@ import parkingRoutes from './routes/parkingRoutes.js';
 import bookingRoutes from './routes/bookingRoutes.js';
 import trafficRoutes from './routes/trafficRoutes.js';
 import ownerRoutes from './routes/ownerRoutes.js';
+
 dotenv.config();
 
 const app = express();

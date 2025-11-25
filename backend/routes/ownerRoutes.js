@@ -1,9 +1,18 @@
 import express from 'express';
 import { pool } from '../db.js';
 import { auth } from '../middleware/auth.js';
+import multer from 'multer';
+import { v2 as cloudinary } from 'cloudinary';
+import streamifier from 'streamifier';
 
 const router = express.Router();
 
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+const upload = multer({storage:multer.memoryStorage(),limits:{fileSize:5*1024*1024}}); // 5MB limit
 // ✅ FIXED OWNER MIDDLEWARE
 function requireOwner(req, res, next) {
   const role = req.user?.role;
@@ -36,9 +45,7 @@ router.get('/parkings', auth, requireOwner, async (req, res) => {
   }
 });
 
-// ----------------------------------------------------------------------
-// ✅ GET OWNER BOOKINGS
-// ----------------------------------------------------------------------
+
 router.get('/bookings', auth, requireOwner, async (req, res) => {
   try {
     const q = `
@@ -105,6 +112,63 @@ router.get('/earnings', auth, requireOwner, async (req, res) => {
 
   } catch (err) {
     console.error('owner earnings error', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+
+function uploadToCloudinary(buffer, folder  = 'smartpark') {
+  return new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      {folder},
+      (error, result) => {  
+        if(error) return reject(error);
+        resolve(result);
+      });
+            streamifier.createReadStream(buffer).pipe(uploadStream);
+  });
+
+
+}
+
+router.post('/parkings',auth, requireOwner, upload.single('image'), async (req, res) => {
+  try {
+    const {name , address,latitude,longitude, capacity_2w , capacity_4w, price_2w_per_hour , price_4w_per_hour } = req.body;
+        if (!name) return res.status(400).json({ error: 'Parking name is required' });
+
+        let imageUrl = null;
+        if(req.file && req.file.buffer){
+          const result = await uploadToCloudinary(req.file.buffer);
+          imageUrl = result.secure_url;
+        }  
+
+ const insertQ = `
+  INSERT INTO parking_locations
+  (owner_id, name, address, latitude, longitude,
+   two_wheeler_slots, four_wheeler_slots,
+   price_2w_per_hour, price_4w_per_hour, image_url)
+  VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+  RETURNING *;
+`;
+
+const values = [
+  req.user.id,
+  name,
+  address || null,
+  latitude ? parseFloat(latitude) : null,
+  longitude ? parseFloat(longitude) : null,
+  capacity_2w ? parseInt(capacity_2w) : 0,     // mapped to two_wheeler_slots
+  capacity_4w ? parseInt(capacity_4w) : 0,     // mapped to four_wheeler_slots
+  price_2w_per_hour ? parseFloat(price_2w_per_hour) : 0,
+  price_4w_per_hour ? parseFloat(price_4w_per_hour) : 0,
+  imageUrl
+];
+
+        const {rows}= await pool.query(insertQ,values);
+        res.status(201).json({parking:rows[0]});
+
+      } catch (err) {
+    console.error('owner add parking error', err);
     res.status(500).json({ error: 'Server error' });
   }
 });
