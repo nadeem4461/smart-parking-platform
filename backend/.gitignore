@@ -1,0 +1,6 @@
+# frontend env file
+.env
+
+node_modules/
+dist/
+build/
