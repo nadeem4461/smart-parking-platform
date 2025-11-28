@@ -172,7 +172,8 @@ const values = [
     res.status(500).json({ error: 'Server error' });
   }
 });
-router.post('/parking/:id',auth,requireOwner, upload.single('image'), async(req, res)=>{
+router.put('/parkings/:id',auth,requireOwner, upload.single('image'), async(req, res)=>{
+  console.log("PUT /parking/:id called");
   try {
       const id = req.params.id;
       const {
@@ -183,7 +184,7 @@ router.post('/parking/:id',auth,requireOwner, upload.single('image'), async(req,
         two_wheeler_slots ,
         four_wheeler_slots,
         price_2w_per_hour ,
-        price_4w_per_hour 
+        price_4w_per_hour ,
 
       }=req.body;
       let imageUrl = req.body.image_url || null;
@@ -196,7 +197,7 @@ router.post('/parking/:id',auth,requireOwner, upload.single('image'), async(req,
       update parking_locations
       set name = $1, 
       address= $2,
-      laitude= $3,
+      latitude= $3,
       longitude= $4,
       two_wheeler_slots= $5,
       four_wheeler_slots= $6,
@@ -209,9 +210,9 @@ router.post('/parking/:id',auth,requireOwner, upload.single('image'), async(req,
       `;
       const values = [
          name , 
+         address,
          latitude,
           longitude,
-          address || null,
           two_wheeler_slots,
           four_wheeler_slots,
           price_2w_per_hour,
@@ -233,7 +234,7 @@ router.post('/parking/:id',auth,requireOwner, upload.single('image'), async(req,
   }
 
 })
-router.delete('/parking/:id', auth , requireOwner, async(req,res)=>{
+router.delete('/parkings/:id', auth , requireOwner, async(req,res)=>{
   try {
     const id= req.params.id;
     const q= `

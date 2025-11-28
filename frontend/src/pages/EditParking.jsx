@@ -42,7 +42,7 @@ export default function EditParking() {
 
       await API.put(`/owner/parkings/${parking.id}`, fd, {
         headers: { "Content-Type": "multipart/form-data" },
-      });
+    });
 
       alert("Parking updated!");
       navigate("/owner/dashboard");
