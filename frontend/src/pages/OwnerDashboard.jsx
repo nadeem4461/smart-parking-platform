@@ -5,6 +5,7 @@ import EarningsChart from "../components/EarningsChart";
 import BookingTable from "../components/BookingTable";
 import ParkingTable from "../components/ParkingTable";
 import AddParking from "./AddParking";
+import { useNavigate } from "react-router-dom";
 export default function OwnerDashboard() {
   const [parkings, setParkings] = useState([]);
   const [bookings, setBookings] = useState([]);
@@ -12,6 +13,7 @@ export default function OwnerDashboard() {
   const [loading, setLoading] = useState(true);
 
   const [showAddParking, setShowAddParking] = useState(false);
+  const navigate = useNavigate();
 
   // load data function (needed for refresh after adding)
   const loadData = async () => {
