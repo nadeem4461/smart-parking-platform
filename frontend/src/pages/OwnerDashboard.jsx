@@ -5,7 +5,6 @@ import EarningsChart from "../components/EarningsChart";
 import BookingTable from "../components/BookingTable";
 import ParkingTable from "../components/ParkingTable";
 import AddParking from "./AddParking";
-
 export default function OwnerDashboard() {
   const [parkings, setParkings] = useState([]);
   const [bookings, setBookings] = useState([]);
@@ -38,22 +37,36 @@ export default function OwnerDashboard() {
   useEffect(() => {
     loadData();
   }, []);
+  async function deleteParking(id){
+    if(!confirm("Are you sure you want to delete this parking?")) return;
+    
+    await API.delete(`/owner/parkings/${id}`);
+    setParkings((prev) => prev.filter((p) => p.id !== id));
+
+  }
+  function editParking(parking){
+    navigate("/owner/edit/" + parking.id, { state: parking });
+  }
+
 
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-blue-800">
-          Owner Dashboard
-        </h1>
+      
+   
 
         {/* ADD PARKING BUTTON */}
-        <button
-          onClick={() => setShowAddParking(true)}
-          className="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700"
-        >
-          + Add Parking
-        </button>
-      </div>
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl font-bold text-blue-800">Owner Dashboard</h1>
+
+          <a
+           href="/owner/add-parking"
+           className="px-4 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700"
+         >
+          ➕ Add Parking
+          </a>
+        </div>
+
+  
 
       {/* SHOW ADD PARKING FORM */}
       {showAddParking && (
@@ -93,11 +106,15 @@ export default function OwnerDashboard() {
 
         <div className="bg-white p-4 rounded shadow">
           <h3 className="font-semibold mb-3">Your Parkings</h3>
-          <ParkingTable parkings={parkings} />
+          <ParkingTable parkings={parkings}
+           onDelete={deleteParking}
+           onEdit = {editParking}
+          />
         </div>
       </div>
 
       {loading && <div className="text-gray-500">Loading...</div>}
     </div>
+    
   );
 }

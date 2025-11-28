@@ -172,5 +172,84 @@ const values = [
     res.status(500).json({ error: 'Server error' });
   }
 });
+router.post('/parking/:id',auth,requireOwner, upload.single('image'), async(req, res)=>{
+  try {
+      const id = req.params.id;
+      const {
+        name , 
+        address, 
+        latitude, 
+        longitude,
+        two_wheeler_slots ,
+        four_wheeler_slots,
+        price_2w_per_hour ,
+        price_4w_per_hour 
+
+      }=req.body;
+      let imageUrl = req.body.image_url || null;
+      if(req.file && req.file.buffer){
+        const result = await uploadToCloudinary(req.file.buffer);
+        imageUrl = result.secure_url;
+
+      }
+      const q= `
+      update parking_locations
+      set name = $1, 
+      address= $2,
+      laitude= $3,
+      longitude= $4,
+      two_wheeler_slots= $5,
+      four_wheeler_slots= $6,
+      price_2w_per_hour= $7,
+      price_4w_per_hour= $8,
+      image_url = $9
+      where id = $10 AND owner_id = $11
+      returning *;
+
+      `;
+      const values = [
+         name , 
+         latitude,
+          longitude,
+          address || null,
+          two_wheeler_slots,
+          four_wheeler_slots,
+          price_2w_per_hour,
+          price_4w_per_hour,
+          imageUrl, 
+          id , 
+          req.user.id
+
+      ] ;
+      const result= await pool.query(q,values);
+      if(result.rows.length===0){
+        return res.status(404).json({error:'parking not found or unaithorized'});
+      }
+        res.json({parking:result.rows[0]});
+
+  } catch (err) {
+      console.error("edit parking error", err);
+    res.status(500).json({ error: "Server error" })
+  }
+
+})
+router.delete('/parking/:id', auth , requireOwner, async(req,res)=>{
+  try {
+    const id= req.params.id;
+    const q= `
+    DELETE FROM parking_locations
+    where id = $1 and owner_id = $2 returning *`;
+    const result =await pool.query(q,[id, req.user.id]);
+    if(result.rows.length===0){
+      return res.status(404).json({error:'parking not found or unaithorized'});
+
+    }
+    res.json({message:'parking deleted successfully'});
+  } catch (err) {
+    console.error('delete parking error', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 
 export default router;

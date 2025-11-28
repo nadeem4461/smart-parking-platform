@@ -1,35 +1,72 @@
-// frontend/src/components/ParkingTable.jsx
-export default function ParkingTable({ parkings = [] }) {
-  if (!parkings.length) return <div className="text-gray-500">No parkings found.</div>;
+import { MapContainer, TileLayer, Marker } from "react-leaflet";
 
+export default function ParkingTable({ parkings, onDelete, onEdit }) {
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-sm">
-        <thead className="text-left text-gray-600">
-          <tr>
-            <th className="py-2">#</th>
-            <th>Name</th>
-            <th>Address</th>
-            <th>2W</th>
-            <th>4W</th>
-            <th>Price 2W</th>
-            <th>Price 4W</th>
+    <table className="w-full text-sm">
+      <thead>
+        <tr className="border-b">
+          <th>Image</th>
+          <th>Name</th>
+          <th>Slots</th>
+          <th>Location</th>
+          <th>Map</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {parkings.map((p) => (
+          <tr key={p.id} className="border-b">
+            {/* Image */}
+            <td>
+              <img
+                src={p.image_url}
+                className="h-16 w-24 object-cover rounded"
+              />
+            </td>
+
+            {/* Name */}
+            <td>{p.name}</td>
+
+            {/* Slots */}
+            <td>
+              2W: {p.two_wheeler_slots} <br />
+              4W: {p.four_wheeler_slots}
+            </td>
+
+            {/* Address */}
+            <td>{p.address}</td>
+
+            {/* MAP PREVIEW */}
+            <td>
+              <div className="h-20 w-32 rounded overflow-hidden shadow">
+                <MapContainer
+                  center={[p.latitude, p.longitude]}
+                  zoom={14}
+                  scrollWheelZoom={false}
+                  dragging={false}
+                  zoomControl={false}
+                  className="h-full w-full"
+                >
+                  <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                  <Marker position={[p.latitude, p.longitude]} />
+                </MapContainer>
+              </div>
+            </td>
+
+            {/* Buttons */}
+            <td className="space-y-2">
+              <button onClick={() => onEdit(p)} className="text-blue-600">
+                Edit
+              </button>
+              <br />
+              <button onClick={() => onDelete(p.id)} className="text-red-600">
+                Delete
+              </button>
+            </td>
           </tr>
-        </thead>
-        <tbody>
-          {parkings.map((p, i) => (
-            <tr key={p.id} className="border-t">
-              <td className="py-2">{i+1}</td>
-              <td>{p.name}</td>
-              <td>{p.address}</td>
-              <td>{p.two_wheeler_slots}</td>
-              <td>{p.four_wheeler_slots}</td>
-              <td>₹{p.price_2w_per_hour}</td>
-              <td>₹{p.price_4w_per_hour}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+        ))}
+      </tbody>
+    </table>
   );
 }
