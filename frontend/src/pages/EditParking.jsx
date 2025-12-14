@@ -32,7 +32,7 @@ export default function EditParking() {
 
   async function submitForm(e) {
     e.preventDefault();
-    setLoading(true);
+    setLoading(true); 
 
     try {
       const fd = new FormData();
