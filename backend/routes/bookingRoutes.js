@@ -6,38 +6,87 @@ const router = express.Router();
 
 router.post('/create',auth, async (req,res)=>{
   try {
-    const { parking_id, vehicle_type, hours } = req.body;
+    const { parking_id, vehicle_type, qty, start_time,end_time } = req.body;
 
-    if(!parking_id || !vehicle_type || !hours){
+    if(!parking_id || !vehicle_type || !qty|| !start_time || !end_time){
       return res.status(400).json({error: "Missing required fields"});
     }
-
-    const priceQ = `SELECT price_2w_per_hour, price_4w_per_hour FROM parking_locations WHERE id=$1`;
-    const q = await pool.query(priceQ, [parking_id]); 
-
-    if(q.rows.length === 0){
+    const qtyNum= parseInt(qty);
+    console.log("Quantity:", qtyNum);
+    if(qtyNum <=0){
+      return res.status(400).json({error: "Invalid quantity"});
+    }
+    const start = new Date(start_time);
+    const end = new Date(end_time);
+    if(isNaN(start.getTime()) || isNaN(end.getTime()) || start >= end){
+      return res.status(400).json({error: "Invalid start or end time"});
+    }
+    const priceQ  = `SELECT two_wheeler_slots, four_wheeler_slots, price_2w_per_hour, price_4w_per_hour FROM parking_locations WHERE id=$1 limit 1`;
+    const parkRes = await pool.query(priceQ, [parking_id]);
+    if(parkRes.rows.length===0){
       return res.status(404).json({error: "Parking location not found"});
     }
+        console.log("Parking ID:", parking_id);
 
-    const row = q.rows[0]; // <-- correct row extraction
+    const p = parkRes.rows[0];
+    const capacity =
+    vehicle_type==="2W"? p.two_wheeler_slots : p.four_wheeler_slots;
+    if (!capacity || capacity <= 0) {
+      return res.status(400).json({ error: 'No capacity configured for this vehicle type' });
+    }
 
-    const rate = vehicle_type === "2W" ? row.price_2w_per_hour : row.price_4w_per_hour;
-    const total_amount = rate * hours;
+    const overlapQ=
+    `
+    select COALESCE(sum(qty),0) as used_slots
+    from bookings
+    where parking_id=$1
+    and vehicle_type=$2
+    and not (end_time <= $3 or start_time >= $4)
+    ` ;
+    const overlapRes= await pool.query(overlapQ,[parking_id, vehicle_type, start, end]);
 
-    const user_id = req.user.id;
+    const usedSlots= parseInt(overlapRes.rows[0].used_slots || 0);
+    const available = capacity - usedSlots;
+    if(qtyNum > available){
+return res.status(400).json({
+        error: `Only ${available} slots available for this time range`,
+      });  
+      }
+      const msdiff= end.getTime()-start.getTime();
+      const hours= msdiff/(1000*60*60);
 
-    const insertQ = `INSERT INTO bookings 
-      (user_id, parking_id, vehicle_type, hours, total_amount)
-      VALUES ($1,$2,$3,$4,$5) RETURNING *`;
+      if(hours <=0){
+        return res.status(400).json({error:"time range must be at least 1 hour"});
 
-    const result = await pool.query(insertQ, [user_id,parking_id,vehicle_type,hours,total_amount]);
+      }
+      const rate = vehicle_type==="2W"?p.price_2w_per_hour : p.price_4w_per_hour;
+      const total_amount = Math.round(rate*hours*qtyNum);
 
-    return res.json({ success: true, booking: result.rows[0] });
+      const user_id = req.user.id;
+      const insertQ=`
+      insert into bookings
+      (user_id,parking_id , vehicle_type,hours, qty,total_amount, start_time, end_time)
+      values($1,$2,$3,$4,$5,$6,$7,$8)
+      returning *;
+      `;
+      const result= await pool.query(insertQ,[
+      user_id,
+      parking_id,
+      vehicle_type,
+      hours,
+      qtyNum,
+      total_amount,
+      start, 
+      end
 
-  } catch(err) {
-    console.log("booking error:", err);
-    return res.status(500).json({error: err.message});
-  }
+      ]);
+     return res.json({success:true, booking: result.rows[0]});
+    } catch (err) {
+      console.error("Error creating booking:", err);
+      return res.status(500).json({
+        error:err.message || "Internal server error",
+      });
+    }
 });
 
 router.get("/my",async(req,res)=>
