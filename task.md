@@ -1,0 +1,28 @@
+# Task Checklist
+
+- [x] Implementing EV Support
+    - [x] Update Backend API (`parkingRoutes.js`) to handle EV spots in `/nearby`
+    - [x] Update Frontend `AddParking.jsx` to include EV option
+    - [x] Update Frontend `Home.jsx` to filter by EV
+    - [x] Verify Database Schema has `ev_slots` and `price_ev_per_hour`
+- [ ] Payment Integration (Razorpay) <!-- id: 22 -->
+    - [ ] Database: Add `payment_status`, `razorpay_order_id` to bookings <!-- id: 23 -->
+    - [ ] Backend: Install `razorpay`, create Order API, Verify API <!-- id: 24 -->
+    - [ ] Frontend: Integrate Razorpay Checkout in Booking Flow <!-- id: 25 -->
+- [ ] Bike Rental Service (Collaboration) <!-- id: 15 -->
+    - [ ] Database: `rentals` table (bike details, price/hr) <!-- id: 16 -->
+    - [ ] Backend: API to fetch available bikes and book them <!-- id: 17 -->
+    - [ ] Frontend: "Rent a Bike" option after parking booking <!-- id: 18 -->
+- [ ] Breakdown Assistance (Tow Van) <!-- id: 19 -->
+    - [ ] Database: `services` or `tow_requests` table <!-- id: 20 -->
+    - [ ] Frontend: Request Tow Van form (Location, Issue) <!-- id: 21 -->
+- [ ] Advanced Filters Implementation
+    - [ ] Implement filter logic in Backend (2W, 4W, EV, Min/Max Price) - *Partially done in backend*
+    - [ ] Create/Update Filter Component in Frontend
+- [/] Debugging and Fixes
+    - [x] Fix critical privacy leak in `/booking/my` (User could see all bookings)
+    - [ ] Fix any existing issues with booking flow
+    - [ ] Verify role-based access control
+- [ ] Roadmap Items
+    - [ ] Real-time IoT Integration
+    - [ ] Mobile App Development

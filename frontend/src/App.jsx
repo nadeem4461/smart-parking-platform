@@ -1,56 +1,117 @@
-import { Routes, Route } from "react-router-dom";
-import Home from "./pages/Home";
-import Login from "./pages/Login";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { Toaster } from "react-hot-toast";
+
+// Pages
 import Signup from "./pages/Signup";
-import ProtectedRoute from "./components/ProtectedRoute";
-import Navbar from "./components/Navbar";
+import Login from "./pages/Login";
+import Home from "./pages/Home";
 import MyBookings from "./pages/MyBookings";
-import TrafficAdvisor from "./pages/TrafficAdvisor";
 import OwnerDashboard from "./pages/OwnerDashboard";
 import AddParking from "./pages/AddParking";
 import EditParking from "./pages/EditParking";
+import TrafficAdvisor from "./pages/TrafficAdvisor";
 
-export default function App() {
+// Components
+import Navbar from "./components/Navbar";
+import ProtectedRoute from "./components/ProtectedRoute";
+
+function App() {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar />
+    <>
+      {/* Toast Notifications */}
+      <Toaster position="top-right" toastOptions={{
+        style: {
+          background: '#333',
+          color: '#fff',
+          borderRadius: '8px',
+        }
+      }} />
 
       <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route
-  path="/owner/edit/:id"
-  element={
-    <ProtectedRoute allowedRoles={['owner','admin']}>
-      <EditParking />
-    </ProtectedRoute>
-  }
-/>
-
+        {/* Public Routes */}
         <Route path="/signup" element={<Signup />} />
-        <Route path="/bookings" element={<MyBookings />} />
-       <Route path="/traffic" element={<TrafficAdvisor />} />
-    <Route path="/owner/dashboard" element={<ProtectedRoute allowedRoles={['owner','admin']}><OwnerDashboard/></ProtectedRoute>} />
-    <Route
-  path="/owner/add-parking"
-  element={
-    <ProtectedRoute allowedRoles={['owner', 'admin']}>
-      <AddParking />
-    </ProtectedRoute>
-    
-  }
-/>
+        <Route path="/login" element={<Login />} />
 
-
-
+        {/* Protected User Routes */}
         <Route
           path="/"
           element={
             <ProtectedRoute>
-              <Home />
+              {/* Navbar only shows on protected pages usually, or wraps them */}
+              <div className="flex flex-col h-screen overflow-hidden">
+                <Navbar />
+                <div className="flex-1 overflow-hidden relative">
+                  <Home />
+                </div>
+              </div>
             </ProtectedRoute>
           }
         />
+
+        <Route
+          path="/bookings"
+          element={
+            <ProtectedRoute>
+              <div className="min-h-screen bg-slate-50">
+                <Navbar />
+                <MyBookings />
+              </div>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/traffic"
+          element={
+            <ProtectedRoute>
+              <div className="min-h-screen bg-slate-50">
+                <Navbar />
+                <TrafficAdvisor />
+              </div>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Protected Owner Routes */}
+        <Route
+          path="/owner/dashboard"
+          element={
+            <ProtectedRoute allowedRoles={['owner', 'admin']}>
+              <div className="min-h-screen bg-slate-50">
+                <Navbar />
+                <OwnerDashboard />
+              </div>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/owner/add-parking"
+          element={
+            <ProtectedRoute allowedRoles={['owner', 'admin']}>
+              <div className="min-h-screen bg-slate-50">
+                <Navbar />
+                <AddParking />
+              </div>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/owner/edit/:id"
+          element={
+            <ProtectedRoute allowedRoles={['owner', 'admin']}>
+              <div className="min-h-screen bg-slate-50">
+                <Navbar />
+                <EditParking />
+              </div>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Fallback */}
+        <Route path="*" element={<Navigate to="/" />} />
       </Routes>
-    </div>
+    </>
   );
 }
+
+export default App;

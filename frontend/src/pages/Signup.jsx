@@ -15,6 +15,7 @@ export default function Signup() {
     email: "",
     password: "",
     confirm: "",
+    role: "user",
   });
   const [loading, setLoading] = useState(false);
 
@@ -38,7 +39,7 @@ export default function Signup() {
         name: form.name,
         email: form.email,
         password: form.password,
-        role: "user",
+        role: form.role,
       });
       // On your backend /signup already returns id,name,email,role (no token).
       // So login immediately after signup to get token:
@@ -148,6 +149,25 @@ export default function Signup() {
               />
             </div>
           </div>
+          {/* role */}
+          <div className="space-y-2">
+            <Label htmlFor="role" className="text-slate-700">
+              I am a...
+            </Label>
+            <div className="relative">
+              <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+              <select
+                id="role"
+                name="role"
+                value={form.role}
+                onChange={onChange}
+                className="w-full pl-11 h-12 rounded-xl border-slate-200 focus:border-blue-600 focus:ring-blue-600/20 bg-white appearance-none"
+              >
+                <option value="user">Driver (User)</option>
+                <option value="owner">Parking Owner</option>
+              </select>
+            </div>
+          </div>
 
           <Button
             disabled={loading}
@@ -175,4 +195,3 @@ export default function Signup() {
     </div>
   );
 }
- 

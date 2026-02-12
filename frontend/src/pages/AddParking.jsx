@@ -15,6 +15,8 @@ export default function AddParking() {
     four_wheeler_slots: "",
     price_2w_per_hour: "",
     price_4w_per_hour: "",
+    ev_slots: "",
+    price_ev_per_hour: "",
   });
 
   const [image, setImage] = useState(null);
@@ -101,14 +103,16 @@ export default function AddParking() {
 
         {/* SLOTS */}
         <div className="grid grid-cols-2 gap-4">
-          <input name="two_wheeler_slots" placeholder="2W Slots" className="border p-2 rounded" onChange={handleChange}/>
-          <input name="four_wheeler_slots" placeholder="4W Slots" className="border p-2 rounded" onChange={handleChange}/>
+          <input name="two_wheeler_slots" placeholder="2W Slots" className="border p-2 rounded" onChange={handleChange} />
+          <input name="four_wheeler_slots" placeholder="4W Slots" className="border p-2 rounded" onChange={handleChange} />
+          <input name="ev_slots" placeholder="EV Slots" className="border p-2 rounded" onChange={handleChange} />
         </div>
 
         {/* PRICES */}
         <div className="grid grid-cols-2 gap-4">
-          <input name="price_2w_per_hour" placeholder="₹ per hour (2W)" className="border p-2 rounded" onChange={handleChange}/>
-          <input name="price_4w_per_hour" placeholder="₹ per hour (4W)" className="border p-2 rounded" onChange={handleChange}/>
+          <input name="price_2w_per_hour" placeholder="₹ per hour (2W)" className="border p-2 rounded" onChange={handleChange} />
+          <input name="price_4w_per_hour" placeholder="₹ per hour (4W)" className="border p-2 rounded" onChange={handleChange} />
+          <input name="price_ev_per_hour" placeholder="₹ per hour (EV)" className="border p-2 rounded" onChange={handleChange} />
         </div>
 
         {/* IMAGE */}

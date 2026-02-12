@@ -3,3 +3,20 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+    body {
+        @apply bg-slate-50 text-slate-900;
+    }
+}
+
+/* Leaflet Routing Machine container hack to make it look decent if it pops up */
+.leaflet-routing-container {
+    display: none;
+    background-color: white;
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    font-family: inherit;
+    font-size: 0.875rem;
+}
